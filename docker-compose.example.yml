@@ -1,0 +1,31 @@
+# Example: add this service alongside your existing TeslaMate and Traccar
+# services. Adjust network names to match your setup.
+#
+# The bridge needs to reach:
+#   - The Mosquitto MQTT broker (teslamate_net)
+#   - Traccar's OsmAnd port 5055 (traccar_net)
+
+services:
+  teslamate_traccar:
+    build: .
+    container_name: teslamate_traccar
+    restart: unless-stopped
+    networks:
+      - teslamate_net
+      - traccar_net
+    depends_on:
+      - teslamate_mosquitto
+      - traccar
+    environment:
+      - MQTT_HOST=teslamate_mosquitto
+      - TRACCAR_HOST=traccar
+      - TRACCAR_PORT=5055
+      - DEVICE_ID=tesla-model-y          # must match Traccar device identifier
+      - CAR_ID=1                          # TeslaMate car ID
+      - UPDATE_INTERVAL=30
+      - LOG_LEVEL=INFO
+      # Only needed for historical import (import_history.py)
+      - TESLAMATE_DB_HOST=teslamate_database
+      - TESLAMATE_DB_USER=teslamate
+      - TESLAMATE_DB_PASSWORD=${TESLAMATE_DB_PASSWORD}
+      - TESLAMATE_DB_NAME=teslamate
