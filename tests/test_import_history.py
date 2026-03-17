@@ -50,6 +50,11 @@ class TestMakeParams:
         assert "odometer" in params
         assert "power" in params
 
+    def test_odometer_converted_to_meters(self):
+        with patch.object(import_history, "DEVICE_ID", "x"):
+            params = import_history.make_params(self._row(odometer=54685.5))
+        assert params["odometer"] == "54685500"
+
     def test_none_fields_omitted(self):
         with patch.object(import_history, "DEVICE_ID", "x"):
             params = import_history.make_params(

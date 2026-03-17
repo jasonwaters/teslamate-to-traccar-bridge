@@ -88,7 +88,10 @@ class CarState:
         if "battery_level" in v and v["battery_level"]:
             params["batt"] = v["battery_level"]
         if "odometer" in v and v["odometer"]:
-            params["odometer"] = v["odometer"]
+            try:
+                params["odometer"] = f"{float(v['odometer']) * 1000:.0f}"  # km -> m
+            except ValueError:
+                pass
         if "power" in v and v["power"]:
             params["power"] = v["power"]
         return params

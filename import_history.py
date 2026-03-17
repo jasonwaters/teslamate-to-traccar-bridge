@@ -76,7 +76,7 @@ def make_params(row: dict) -> dict[str, str]:
     if row["battery_level"] is not None:
         params["batt"] = str(row["battery_level"])
     if row["odometer"] is not None:
-        params["odometer"] = str(row["odometer"])
+        params["odometer"] = f"{float(row['odometer']) * 1000:.0f}"  # km -> m
     if row["power"] is not None:
         params["power"] = str(row["power"])
     return params

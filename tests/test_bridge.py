@@ -98,7 +98,7 @@ class TestCarState:
         assert params["bearing"] == "180"
         assert params["altitude"] == "1500"
         assert params["batt"] == "75"
-        assert params["odometer"] == "54000.5"
+        assert params["odometer"] == "54000500"  # km -> m
         assert params["power"] == "-10"
 
     def test_build_params_skips_empty_optional_fields(self):
