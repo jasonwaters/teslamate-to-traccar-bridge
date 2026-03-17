@@ -7,7 +7,7 @@
 
 services:
   teslamate_traccar:
-    build: .
+    image: ghcr.io/jasonwaters/teslamate-to-traccar-bridge:latest
     container_name: teslamate_traccar
     restart: unless-stopped
     networks:
