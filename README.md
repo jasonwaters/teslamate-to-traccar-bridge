@@ -32,6 +32,8 @@ endpoint as simple HTTP requests.
 | `battery_level` | `batt` (stored as `batteryLevel` attribute) |
 | `odometer` | `odometer` (custom attribute) |
 | `power` | `power` (custom attribute) |
+| `charging_state` | `charge` (native Traccar boolean: `true` when charging) |
+| `plugged_in` | `pluggedIn` (custom attribute) |
 
 ## Quick Start
 
@@ -53,7 +55,8 @@ Mosquitto broker and Traccar's OsmAnd port.
 
 ```yaml
 teslamate_traccar:
-  build: .
+  image: ghcr.io/jasonwaters/teslamate-to-traccar-bridge:latest
+  container_name: teslamate_traccar
   restart: unless-stopped
   networks:
     - teslamate_net   # to reach Mosquitto

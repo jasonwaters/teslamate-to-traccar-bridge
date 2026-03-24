@@ -93,6 +93,8 @@ class TestCarState:
         cs.update("battery_level", "75")
         cs.update("odometer", "54000.5")
         cs.update("power", "-10")
+        cs.update("charging_state", "Charging")
+        cs.update("plugged_in", "true")
         with patch.object(bridge, "DEVICE_ID", "x"):
             params = cs.build_params()
         assert params["bearing"] == "180"
@@ -100,6 +102,17 @@ class TestCarState:
         assert params["batt"] == "75"
         assert params["odometer"] == "54000500"  # km -> m
         assert params["power"] == "-10"
+        assert params["charge"] == "true"
+        assert params["pluggedIn"] == "true"
+
+    def test_build_params_charging_state_not_charging(self):
+        cs = self._make()
+        cs.update("latitude", "40.0")
+        cs.update("longitude", "-111.0")
+        cs.update("charging_state", "Complete")
+        with patch.object(bridge, "DEVICE_ID", "x"):
+            params = cs.build_params()
+        assert params["charge"] == "false"
 
     def test_build_params_skips_empty_optional_fields(self):
         cs = self._make()
@@ -159,11 +172,33 @@ class TestOnMessage:
         assert cs.last_sent > 0
 
     @patch("bridge.send_to_traccar", return_value=True)
-    def test_no_send_on_non_position_topic(self, mock_send):
+    def test_sends_on_non_position_topic_when_driving(self, mock_send):
         cs = bridge.car_state
         cs.update("latitude", "40.0")
         cs.update("longitude", "-111.0")
         cs.update("state", "driving")
         with patch.object(bridge, "DEVICE_ID", "test"):
             bridge.on_message(None, None, self._msg("teslamate/cars/1/speed", "50"))
+        mock_send.assert_called_once()
+
+    @patch("bridge.send_to_traccar", return_value=True)
+    def test_sends_on_battery_update_after_interval(self, mock_send):
+        cs = bridge.car_state
+        cs.update("latitude", "40.0")
+        cs.update("longitude", "-111.0")
+        cs.update("state", "online")
+        cs.last_sent = time.time() - bridge.UPDATE_INTERVAL - 1
+        with patch.object(bridge, "DEVICE_ID", "test"):
+            bridge.on_message(None, None, self._msg("teslamate/cars/1/battery_level", "75"))
+        mock_send.assert_called_once()
+
+    @patch("bridge.send_to_traccar", return_value=True)
+    def test_no_send_on_battery_update_within_interval(self, mock_send):
+        cs = bridge.car_state
+        cs.update("latitude", "40.0")
+        cs.update("longitude", "-111.0")
+        cs.update("state", "online")
+        cs.mark_sent()
+        with patch.object(bridge, "DEVICE_ID", "test"):
+            bridge.on_message(None, None, self._msg("teslamate/cars/1/battery_level", "75"))
         mock_send.assert_not_called()

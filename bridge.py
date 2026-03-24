@@ -37,6 +37,8 @@ TRACKED_TOPICS = [
     "power",
     "state",
     "since",
+    "charging_state",
+    "plugged_in",
 ]
 
 TRACCAR_URL = f"http://{TRACCAR_HOST}:{TRACCAR_PORT}"
@@ -94,6 +96,10 @@ class CarState:
                 pass
         if "power" in v and v["power"]:
             params["power"] = v["power"]
+        if "charging_state" in v and v["charging_state"]:
+            params["charge"] = str(v["charging_state"].lower() == "charging").lower()
+        if "plugged_in" in v and v["plugged_in"]:
+            params["pluggedIn"] = v["plugged_in"]
         return params
 
     def mark_sent(self) -> None:
@@ -143,7 +149,7 @@ def on_message(_client: mqtt.Client, _userdata, msg: mqtt.MQTTMessage):
 
     car_state.update(field, payload)
 
-    if field in ("latitude", "longitude") and car_state.should_send():
+    if car_state.should_send():
         params = car_state.build_params()
         if send_to_traccar(params):
             car_state.mark_sent()
